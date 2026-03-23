@@ -195,6 +195,9 @@
     </div>
   </div>
 
+  <!-- ===== デバッグ表示エリア ===== -->
+  <div id="debugArea" style="background:#FFF3E0;border:2px solid #FF9800;border-radius:8px;padding:12px;margin:12px 0;font-size:12px;font-family:monospace;white-space:pre-wrap;display:none;max-height:300px;overflow-y:auto;"></div>
+
   <!-- ===== 完了画面 ===== -->
   <div id="doneScreen" style="display:none;">
     <div class="done-card">
@@ -264,14 +267,21 @@
       params.append('agreedToTerms', 'true');
       params.append('agreedAt', new Date().toISOString());
 
+      // デバッグ表示関数
+      const dbg = document.getElementById('debugArea');
+      function debugLog(msg) {
+        dbg.style.display = 'block';
+        dbg.textContent += msg + '\n';
+      }
+
       try {
-        // GASにデータ送信
+        debugLog('1. GASに送信開始...');
         await fetch(GAS_URL + '?' + params.toString(), { mode: 'no-cors' });
+        debugLog('2. GAS送信完了');
 
-        // デバッグ: LIFF状態確認
-        alert('DEBUG: isInClient=' + liff.isInClient() + ', isLoggedIn=' + liff.isLoggedIn());
+        debugLog('3. isInClient=' + liff.isInClient());
+        debugLog('4. isLoggedIn=' + liff.isLoggedIn());
 
-        // LINEトークに送信内容をメッセージとして投稿
         if (liff.isInClient()) {
           const fd = new FormData(form);
           const msgText = '✅ 協賛申込を送信しました\n\n'
@@ -284,22 +294,22 @@
             + (fd.get('note') ? '📝 備考: ' + fd.get('note') + '\n' : '')
             + '━━━━━━━━━━━━━━\n\n'
             + '審査後にご連絡いたします。';
+          debugLog('5. sendMessages呼び出し...');
           try {
             await liff.sendMessages([{ type: 'text', text: msgText }]);
-            alert('DEBUG: sendMessages成功');
+            debugLog('6. sendMessages成功!');
           } catch (sendErr) {
-            alert('DEBUG: sendMessagesエラー: ' + sendErr.message);
+            debugLog('6. sendMessagesエラー: ' + sendErr.message);
           }
+        } else {
+          debugLog('5. isInClient=falseのためスキップ');
         }
 
-        // 完了画面を表示
+        // 完了画面は表示しない（デバッグ情報を見るため）
+        debugLog('--- 完了 ---');
         confirmOverlay.classList.remove('active');
-        form.style.display = 'none';
-        document.querySelector('h1').style.display = 'none';
-        document.getElementById('doneScreen').style.display = 'block';
-        setTimeout(() => { if (liff.isInClient()) liff.closeWindow(); }, 5000);
       } catch (err) {
-        alert('通信エラー: ' + err.message);
+        debugLog('エラー: ' + err.message);
         btn.disabled = false; btn.textContent = '申込を確定する';
       }
     });
