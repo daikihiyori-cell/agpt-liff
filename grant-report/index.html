@@ -9,18 +9,63 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, "Hiragino Sans", sans-serif; background: #f5f5f5; padding: 16px; }
     h1 { font-size: 20px; color: #FF9800; text-align: center; margin: 16px 0; }
-    .form-group { margin: 12px 0; }
+    .form-group { margin: 10px 0; }
     label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; }
     .required::after { content: " *"; color: #E91E63; }
-    input[type="text"], input[type="date"] { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;
-      font-size: 16px; -webkit-appearance: none; }
+    input[type="text"], input[type="date"] {
+      width: 100%; padding: 12px; border: 2px solid #ddd;
+      border-radius: 8px; font-size: 16px; -webkit-appearance: none;
+    }
     input[type="text"]:focus, input[type="date"]:focus { border-color: #FF9800; outline: none; }
     input.error-field { border-color: #E91E63; }
-    .error-msg { color: #E91E63; font-size: 13px; margin-top: 6px; display: none; }
-    button[type="submit"] { width: 100%; padding: 16px; background: #FF9800; color: #fff; border: none;
-      border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; }
-    button:disabled { background: #ccc; }
-    .status { text-align: center; padding: 20px; font-size: 14px; color: #555; }
+    .error-msg { color: #E91E63; font-size: 12px; margin-top: 4px; display: none; }
+
+    /* ===== 共通セクション ===== */
+    .section-label {
+      font-size: 12px; font-weight: 700; color: #888;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin: 20px 0 10px;
+    }
+
+    /* ===== チケット行 ===== */
+    .ticket-row {
+      background: #fff; border-radius: 10px;
+      padding: 12px; margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .row-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 8px;
+    }
+    .row-number {
+      font-size: 13px; font-weight: 700; color: #FF9800;
+    }
+    .btn-remove {
+      background: none; border: 1px solid #ddd; border-radius: 50%;
+      width: 28px; height: 28px; font-size: 16px; color: #999;
+      cursor: pointer; line-height: 1; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-remove:active { background: #f0f0f0; }
+    .ticket-row .form-group { margin: 6px 0; }
+    .ticket-row input { padding: 10px 12px; font-size: 15px; }
+
+    /* ===== 行追加ボタン ===== */
+    #btnAddRow {
+      width: 100%; padding: 12px; background: #fff;
+      border: 2px dashed #FF9800; border-radius: 10px;
+      color: #FF9800; font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-top: 4px;
+    }
+    #btnAddRow:active { background: #fff8f0; }
+
+    /* ===== 送信ボタン ===== */
+    button[type="submit"] {
+      width: 100%; padding: 16px; background: #FF9800;
+      color: #fff; border: none; border-radius: 8px;
+      font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px;
+    }
+    button[type="submit"]:disabled { background: #ccc; }
 
     /* ===== 完了画面 ===== */
     .done-card { text-align: center; padding: 40px 20px; }
@@ -32,113 +77,197 @@
 <body>
   <h1>📋 チケット付与報告</h1>
   <form id="form">
-    <input type="hidden" id="userId" name="userId">
+    <input type="hidden" id="userId">
 
-    <div class="form-group">
-      <label class="required">店舗名</label>
-      <input name="storeName" type="text" placeholder="例: ポーカースポット渋谷" required>
+    <!-- 共通項目 -->
+    <div class="section-label">共通情報</div>
+    <div style="background:#fff; border-radius:10px; padding:12px; box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+      <div class="form-group">
+        <label class="required">店舗名</label>
+        <input id="storeName" type="text" placeholder="例: ポーカースポット渋谷" required>
+      </div>
+      <div class="form-group">
+        <label class="required">付与日</label>
+        <input id="grantDate" type="date" required>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="required">チケットID</label>
-      <input name="ticketId" id="ticketId" type="text" placeholder="例: 12345" required>
-      <div class="error-msg" id="ticketError">チケットIDが存在しません</div>
-    </div>
-    <div class="form-group">
-      <label class="required">付与先 Waitinglist ID</label>
-      <input name="wlId" type="text" placeholder="例: WL-12345" required>
-    </div>
-    <div class="form-group">
-      <label class="required">付与日</label>
-      <input name="date" type="date" required>
-    </div>
+
+    <!-- チケット行 -->
+    <div class="section-label">チケット情報</div>
+    <div id="ticketRows"></div>
+    <button type="button" id="btnAddRow">＋ チケットを追加</button>
 
     <button type="submit">付与報告を送信</button>
   </form>
 
-  <!-- ===== 完了画面 ===== -->
+  <!-- 完了画面 -->
   <div id="doneScreen" style="display:none;">
     <div class="done-card">
       <div class="icon">✅</div>
       <h2>付与報告が完了しました</h2>
-      <p>送信が完了しました。<br>内容はLINEメッセージでもお送りしています。</p>
+      <p id="doneMsg">送信が完了しました。<br>内容はLINEメッセージでもお送りしています。</p>
       <p style="margin-top:16px;font-size:11px;color:#999;">この画面は自動的に閉じます</p>
     </div>
   </div>
 
   <script>
-    const LIFF_ID = '2009575513-pRqWROsZ';
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxg9ZXqESvj3zM452178zTVdMH5BRPa9obpL66h7xraK-KVJtuwPU532zH74d1oBLjD/exec';
+    const LIFF_ID  = '2009575513-pRqWROsZ';
+    const GAS_URL  = 'https://script.google.com/macros/s/AKfycbxg9ZXqESvj3zM452178zTVdMH5BRPa9obpL66h7xraK-KVJtuwPU532zH74d1oBLjD/exec';
 
+    // ===== 行管理 =====
+    let rowCount = 0;
+
+    function addRow() {
+      rowCount++;
+      const idx = rowCount;
+      const div = document.createElement('div');
+      div.className = 'ticket-row';
+      div.dataset.idx = idx;
+      div.innerHTML = `
+        <div class="row-header">
+          <span class="row-number">チケット ${idx}</span>
+          <button type="button" class="btn-remove" onclick="removeRow(this)">×</button>
+        </div>
+        <div class="form-group">
+          <label class="required">チケットID</label>
+          <input type="text" class="ticket-id" placeholder="例: 12345" required>
+          <div class="error-msg ticket-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="required">付与先 Waitinglist ID</label>
+          <input type="text" class="wl-id" placeholder="例: WL-12345" required>
+        </div>
+      `;
+      document.getElementById('ticketRows').appendChild(div);
+      updateRemoveButtons();
+    }
+
+    function removeRow(btn) {
+      const row = btn.closest('.ticket-row');
+      row.remove();
+      renumberRows();
+      updateRemoveButtons();
+    }
+
+    function renumberRows() {
+      document.querySelectorAll('.ticket-row').forEach((row, i) => {
+        row.querySelector('.row-number').textContent = 'チケット ' + (i + 1);
+      });
+    }
+
+    function updateRemoveButtons() {
+      const rows = document.querySelectorAll('.ticket-row');
+      rows.forEach(row => {
+        row.querySelector('.btn-remove').style.visibility = rows.length > 1 ? 'visible' : 'hidden';
+      });
+    }
+
+    function clearRowErrors() {
+      document.querySelectorAll('.ticket-id').forEach(el => el.classList.remove('error-field'));
+      document.querySelectorAll('.ticket-error').forEach(el => {
+        el.style.display = 'none'; el.textContent = '';
+      });
+    }
+
+    // ===== 初期化 =====
     async function init() {
+      addRow(); // 最初の1行
+      document.getElementById('btnAddRow').addEventListener('click', addRow);
       try {
         await liff.init({ liffId: LIFF_ID });
-        var ctx = liff.getContext();
+        const ctx = liff.getContext();
         if (ctx && ctx.userId) {
           document.getElementById('userId').value = ctx.userId;
         } else if (liff.isLoggedIn()) {
-          var profile = await liff.getProfile();
+          const profile = await liff.getProfile();
           document.getElementById('userId').value = profile.userId;
         }
-        document.querySelector('[name="date"]').value = new Date().toISOString().split('T')[0];
+        document.getElementById('grantDate').value = new Date().toISOString().split('T')[0];
       } catch (e) { /* init error */ }
     }
 
+    // ===== 送信処理 =====
     document.getElementById('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent = '送信中...';
+      btn.disabled = true; btn.textContent = '確認中...';
+      clearRowErrors();
 
-      // エラー表示をリセット
-      const ticketInput = document.getElementById('ticketId');
-      const ticketError = document.getElementById('ticketError');
-      ticketInput.classList.remove('error-field');
-      ticketError.style.display = 'none';
+      const storeName = document.getElementById('storeName').value.trim();
+      const date      = document.getElementById('grantDate').value;
+      const userId    = document.getElementById('userId').value;
 
-      const ticketIdVal = ticketInput.value.trim();
-      const params = new URLSearchParams(new FormData(e.target));
-      params.append('action', 'grant');
+      // 全行のチケットID・WL IDを収集
+      const rows = Array.from(document.querySelectorAll('.ticket-row'));
+      const ticketInputs = rows.map(row => ({
+        ticketId: row.querySelector('.ticket-id').value.trim(),
+        wlId:     row.querySelector('.wl-id').value.trim(),
+        errorEl:  row.querySelector('.ticket-error'),
+        inputEl:  row.querySelector('.ticket-id'),
+      }));
 
       try {
-        // ① チケットID存在確認（GASから直接JSONを取得）
-        const checkRes = await fetch(GAS_URL + '?action=checkTicket&ticketId=' + encodeURIComponent(ticketIdVal));
-        const checkData = await checkRes.json();
+        // ① 全チケットを並列で存在確認
+        const checks = await Promise.all(ticketInputs.map(t =>
+          fetch(GAS_URL + '?action=checkTicket&ticketId=' + encodeURIComponent(t.ticketId))
+            .then(r => r.json())
+        ));
 
-        if (!checkData.exists) {
-          ticketError.textContent = 'チケットIDが存在しません';
-          ticketError.style.display = 'block';
-          ticketInput.classList.add('error-field');
+        let hasError = false;
+        checks.forEach((check, i) => {
+          const t = ticketInputs[i];
+          if (!check.exists) {
+            t.errorEl.textContent = 'チケットIDが存在しません';
+            t.errorEl.style.display = 'block';
+            t.inputEl.classList.add('error-field');
+            hasError = true;
+          } else if (check.status !== '配送済') {
+            t.errorEl.textContent = '報告できません（ステータス: ' + check.status + '）';
+            t.errorEl.style.display = 'block';
+            t.inputEl.classList.add('error-field');
+            hasError = true;
+          }
+        });
+
+        if (hasError) {
           btn.disabled = false; btn.textContent = '付与報告を送信';
           return;
         }
 
-        if (checkData.status !== '配送済') {
-          ticketError.textContent = 'このチケットは報告できません（ステータス: ' + checkData.status + '）';
-          ticketError.style.display = 'block';
-          ticketInput.classList.add('error-field');
-          btn.disabled = false; btn.textContent = '付与報告を送信';
-          return;
-        }
+        // ② 全件まとめて送信
+        btn.textContent = '送信中...';
+        const tickets = ticketInputs.map(t => ({ ticketId: t.ticketId, wlId: t.wlId }));
+        const params = new URLSearchParams({
+          action:    'grantMultiple',
+          storeName: storeName,
+          date:      date,
+          userId:    userId,
+          tickets:   JSON.stringify(tickets),
+        });
 
-        // ② 問題なければ本送信（GASに書き込み＋LINE通知）
-        const grantRes = await fetch(GAS_URL + '?' + params.toString());
+        const grantRes  = await fetch(GAS_URL + '?' + params.toString());
         const grantData = await grantRes.json();
 
         if (grantData.error) {
-          ticketError.textContent = grantData.error;
-          ticketError.style.display = 'block';
-          ticketInput.classList.add('error-field');
+          // 全体エラー（滅多にないが念のため）
+          const firstError = document.querySelector('.ticket-error');
+          if (firstError) { firstError.textContent = grantData.error; firstError.style.display = 'block'; }
           btn.disabled = false; btn.textContent = '付与報告を送信';
           return;
         }
 
-        // 完了画面を表示
+        // ③ 完了画面
+        const count = tickets.length;
+        document.getElementById('doneMsg').innerHTML =
+          count + '件の付与報告が完了しました。<br>内容はLINEメッセージでもお送りしています。';
         document.getElementById('form').style.display = 'none';
         document.querySelector('h1').style.display = 'none';
         document.getElementById('doneScreen').style.display = 'block';
         setTimeout(() => { if (liff.isInClient()) liff.closeWindow(); }, 3000);
+
       } catch (err) {
-        ticketError.textContent = '通信エラーが発生しました。再度お試しください。';
-        ticketError.style.display = 'block';
+        const firstError = document.querySelector('.ticket-error');
+        if (firstError) { firstError.textContent = '通信エラーが発生しました。再度お試しください。'; firstError.style.display = 'block'; }
         btn.disabled = false; btn.textContent = '付与報告を送信';
       }
     });
