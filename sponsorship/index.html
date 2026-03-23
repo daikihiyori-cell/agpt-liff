@@ -265,10 +265,26 @@
       params.append('agreedAt', new Date().toISOString());
 
       try {
-        // GASはリダイレクト(302)を返すため、no-corsモードで送信
-        // リクエストは確実にGASに届き処理される
+        // GASにデータ送信
         await fetch(GAS_URL + '?' + params.toString(), { mode: 'no-cors' });
-        // 送信成功 → 完了画面を表示
+
+        // LINEトークに送信内容をメッセージとして投稿
+        if (liff.isInClient()) {
+          const fd = new FormData(form);
+          const msgText = '✅ 協賛申込を送信しました\n\n'
+            + '━━━━━━━━━━━━━━\n'
+            + '📍 店舗名: ' + (fd.get('storeName') || '') + '\n'
+            + '📞 電話番号: ' + (fd.get('phone') || '') + '\n'
+            + '📧 メール: ' + (fd.get('email') || '') + '\n'
+            + '📋 プラン: ' + (fd.get('plan') || '') + '\n'
+            + '🏠 住所: ' + (fd.get('address') || '') + '\n'
+            + (fd.get('note') ? '📝 備考: ' + fd.get('note') + '\n' : '')
+            + '━━━━━━━━━━━━━━\n\n'
+            + '審査後にご連絡いたします。';
+          await liff.sendMessages([{ type: 'text', text: msgText }]);
+        }
+
+        // 完了画面を表示
         confirmOverlay.classList.remove('active');
         form.style.display = 'none';
         document.querySelector('h1').style.display = 'none';
