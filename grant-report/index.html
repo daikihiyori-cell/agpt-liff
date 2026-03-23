@@ -15,6 +15,8 @@
     input[type="text"], input[type="date"] { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;
       font-size: 16px; -webkit-appearance: none; }
     input[type="text"]:focus, input[type="date"]:focus { border-color: #FF9800; outline: none; }
+    input.error-field { border-color: #E91E63; }
+    .error-msg { color: #E91E63; font-size: 13px; margin-top: 6px; display: none; }
     button[type="submit"] { width: 100%; padding: 16px; background: #FF9800; color: #fff; border: none;
       border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; }
     button:disabled { background: #ccc; }
@@ -38,7 +40,8 @@
     </div>
     <div class="form-group">
       <label class="required">チケットID</label>
-      <input name="ticketId" id="ticketId" type="text" placeholder="例: AGPT-2026-0001" required>
+      <input name="ticketId" id="ticketId" type="text" placeholder="例: 12345" required>
+      <div class="error-msg" id="ticketError">チケットIDが存在しません</div>
     </div>
     <div class="form-group">
       <label class="required">付与先 Waitinglist ID</label>
@@ -85,12 +88,33 @@
       const btn = e.target.querySelector('button[type="submit"]');
       btn.disabled = true; btn.textContent = '送信中...';
 
+      // エラー表示をリセット
+      const ticketInput = document.getElementById('ticketId');
+      const ticketError = document.getElementById('ticketError');
+      ticketInput.classList.remove('error-field');
+      ticketError.style.display = 'none';
+
       const params = new URLSearchParams(new FormData(e.target));
       params.append('action', 'grant');
 
       try {
-        // GASにデータ送信（GAS側でpushMessageも実行される）
-        await fetch(GAS_URL + '?' + params.toString(), { mode: 'no-cors' });
+        const res = await fetch(GAS_URL + '?' + params.toString());
+        const data = await res.json();
+
+        if (data.error) {
+          // エラーの種類に応じてメッセージを表示
+          if (data.error === 'チケットIDが見つかりません') {
+            ticketError.textContent = 'チケットIDが存在しません';
+            ticketError.style.display = 'block';
+            ticketInput.classList.add('error-field');
+          } else {
+            ticketError.textContent = data.error;
+            ticketError.style.display = 'block';
+            ticketInput.classList.add('error-field');
+          }
+          btn.disabled = false; btn.textContent = '付与報告を送信';
+          return;
+        }
 
         // 完了画面を表示
         document.getElementById('form').style.display = 'none';
