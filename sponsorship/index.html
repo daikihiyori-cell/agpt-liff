@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AGPT 協賛申込</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, "Hiragino Sans", sans-serif; background: #f5f5f5; padding: 16px; }
+    h1 { font-size: 20px; color: #06C755; text-align: center; margin: 16px 0; }
+    .form-group { margin: 14px 0; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; }
+    input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;
+      font-size: 16px; -webkit-appearance: none; }
+    input:focus, select:focus, textarea:focus { border-color: #06C755; outline: none; }
+    .required::after { content: " *"; color: #E91E63; }
+    .radio-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .radio-group label { display: flex; align-items: center; background: #fff; border: 2px solid #ddd;
+      border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: 400; flex: 1; min-width: 140px; }
+    .radio-group input[type="radio"] { width: auto; margin-right: 8px; }
+    .radio-group input[type="radio"]:checked + span { color: #06C755; font-weight: 700; }
+    .status { text-align: center; padding: 20px; font-size: 14px; color: #555; }
+
+    /* ===== 利用規約 ===== */
+    .terms-section { margin: 20px 0 0; padding-top: 20px; border-top: 2px solid #e0e0e0; }
+    .terms-title { font-size: 15px; font-weight: 700; color: #1F4E79; margin-bottom: 8px; }
+    .terms-box { background: #fff; border: 2px solid #ddd; border-radius: 8px; padding: 16px;
+      max-height: 260px; overflow-y: auto; font-size: 12px; line-height: 1.8; color: #444;
+      -webkit-overflow-scrolling: touch; }
+    .terms-box h3 { font-size: 13px; color: #1F4E79; margin: 14px 0 4px; }
+    .terms-box h3:first-child { margin-top: 0; }
+    .terms-box p { margin: 4px 0; }
+    .terms-box ol { padding-left: 20px; margin: 4px 0; }
+    .terms-box ol li { margin: 3px 0; }
+    .scroll-hint { font-size: 11px; color: #999; text-align: center; margin-top: 6px; }
+
+    /* ===== 同意チェック ===== */
+    .agree-group { display: flex; align-items: center; margin: 16px 0; padding: 14px;
+      background: #FFFDE7; border: 2px solid #FDD835; border-radius: 8px; }
+    .agree-group input[type="checkbox"] { width: 22px; height: 22px; margin-right: 10px;
+      flex-shrink: 0; accent-color: #06C755; }
+    .agree-group label { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 0; }
+
+    /* ===== 確認画面 ===== */
+    .confirm-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; padding: 16px; }
+    .confirm-overlay.active { display: flex; }
+    .confirm-card { background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 400px;
+      max-height: 85vh; overflow-y: auto; }
+    .confirm-card h2 { font-size: 18px; color: #1F4E79; text-align: center; margin-bottom: 16px; }
+    .confirm-item { display: flex; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .confirm-item .label { font-size: 12px; color: #888; width: 90px; flex-shrink: 0; }
+    .confirm-item .value { font-size: 14px; color: #333; font-weight: 600; }
+    .confirm-buttons { display: flex; gap: 10px; margin-top: 20px; }
+    .confirm-buttons button { flex: 1; padding: 14px; border: none; border-radius: 8px;
+      font-size: 15px; font-weight: 700; cursor: pointer; }
+    .btn-back { background: #e0e0e0; color: #555; }
+    .btn-confirm { background: #06C755; color: #fff; }
+    .btn-confirm:disabled { background: #ccc; }
+
+    /* ===== 完了画面 ===== */
+    .done-card { text-align: center; padding: 40px 20px; }
+    .done-card .icon { font-size: 48px; margin-bottom: 12px; }
+    .done-card h2 { font-size: 20px; color: #2E7D32; margin-bottom: 8px; }
+    .done-card p { font-size: 13px; color: #666; line-height: 1.7; }
+  </style>
+</head>
+<body>
+
+  <!-- ===== 入力フォーム ===== -->
+  <h1>🎫 AGPT 協賛申込</h1>
+  <form id="form">
+    <input type="hidden" id="userId" name="userId">
+
+    <div class="form-group">
+      <label class="required">店舗名</label>
+      <input name="storeName" required>
+    </div>
+    <div class="form-group">
+      <label class="required">電話番号</label>
+      <input name="phone" type="tel" required>
+    </div>
+    <div class="form-group">
+      <label class="required">メールアドレス</label>
+      <input name="email" type="email" required>
+    </div>
+    <div class="form-group">
+      <label class="required">協賛プラン</label>
+      <div class="radio-group">
+        <label><input type="radio" name="plan" value="ベーシック（20万円）" required><span>ベーシック<br>20万円 / 10枚</span></label>
+        <label><input type="radio" name="plan" value="ライト（52.5万円）"><span>ライト<br>52.5万円 / 30枚</span></label>
+        <label><input type="radio" name="plan" value="スタンダード（75万円）"><span>スタンダード<br>75万円 / 60枚</span></label>
+        <label><input type="radio" name="plan" value="プレミアム（140万円）"><span>プレミアム<br>140万円 / 100枚</span></label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="required">住所（チケット配送先）</label>
+      <input name="address" required>
+    </div>
+    <div class="form-group">
+      <label>備考</label>
+      <textarea name="note" rows="3"></textarea>
+    </div>
+
+    <!-- ===== 利用規約 ===== -->
+    <div class="terms-section">
+      <div class="terms-title">AGPT サテライト協賛 利用規約</div>
+      <div class="terms-box" id="termsBox">
+        <h3>第1条（目的）</h3>
+        <p>本規約は、AGPT（以下「主催者」）が運営するポーカートーナメントサテライト事業における協賛契約の条件を定めるものです。</p>
+
+        <h3>第2条（協賛内容）</h3>
+        <p>協賛店舗（以下「店舗」）は、選択したプランに応じた協賛金を支払い、主催者より招待チケットおよび各種特典の提供を受けます。</p>
+
+        <h3>第3条（招待チケットの取り扱い）</h3>
+        <p>店舗は、主催者から付与された招待チケットについて、以下の事項を遵守するものとします。</p>
+        <ol>
+          <li>招待チケットは非売品であり、売買・再販売を禁止します</li>
+          <li>第三者への譲渡を禁止します</li>
+          <li>換金を禁止します</li>
+          <li>チケットはAGPT主催トーナメントでのみ使用可能です</li>
+          <li>チケットの有効期限は発行日から6ヶ月間です</li>
+          <li>紛失・盗難時は一律無効とし、再発行は行いません</li>
+        </ol>
+
+        <h3>第4条（チケット配布・付与報告）</h3>
+        <p>店舗は、チケットの配布方法を自由に決定できます。ただし、チケットを配布した場合は、以下の情報を速やかに主催者に報告する義務を負います。</p>
+        <ol>
+          <li>チケットID</li>
+          <li>付与先プレイヤーのWaitinglist ID</li>
+          <li>付与日</li>
+        </ol>
+
+        <h3>第5条（禁止事項）</h3>
+        <p>店舗は以下の行為を行ってはなりません。</p>
+        <ol>
+          <li>チケットの有償販売・オークション出品</li>
+          <li>架空の人物へのチケット付与（名義貸し）</li>
+          <li>主催者の承認なく第三者にチケットを譲渡する行為</li>
+          <li>虚偽の付与報告</li>
+          <li>主催者のブランドイメージを毀損する行為</li>
+        </ol>
+
+        <h3>第6条（協賛金・支払い）</h3>
+        <p>協賛金は、契約成立後に主催者が指定する方法により支払うものとします。入金確認後にチケットの発行・配送手続きを行います。</p>
+
+        <h3>第7条（契約期間）</h3>
+        <p>本契約はシーズン単位で締結し、契約期間中の途中解約による返金は原則として行いません。</p>
+
+        <h3>第8条（契約解除）</h3>
+        <p>主催者は、店舗が本規約に違反した場合、事前の通知なく契約を解除し、未使用チケットを無効化できるものとします。この場合、協賛金の返還は行いません。</p>
+
+        <h3>第9条（免責事項）</h3>
+        <p>天災・感染症・行政指導等の不可抗力により大会が中止となった場合、主催者は代替大会の開催または協賛金の一部返還について誠意をもって協議するものとします。</p>
+
+        <h3>第10条（個人情報の取り扱い）</h3>
+        <p>主催者は、本申込で取得した個人情報を、協賛契約の履行、チケット管理、大会運営の目的にのみ使用し、法令に基づく場合を除き第三者に提供しません。</p>
+
+        <h3>第11条（Waitinglistシステムの利用）</h3>
+        <p>店舗は、協賛期間中Waitinglistシステムの利用契約を維持するものとします。Waitinglistシステムはチケット管理・付与報告・参加者管理に使用されます。</p>
+
+        <h3>第12条（準拠法・管轄）</h3>
+        <p>本規約は日本法に準拠し、紛争が生じた場合は東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p>
+      </div>
+      <div class="scroll-hint">↕ スクロールして最後までお読みください</div>
+    </div>
+
+    <!-- ===== 同意チェックボックス ===== -->
+    <div class="agree-group">
+      <input type="checkbox" id="agreeCheck" required>
+      <label for="agreeCheck">上記の利用規約に同意します</label>
+    </div>
+
+    <button type="submit" id="submitBtn" disabled>申込内容を確認する</button>
+  </form>
+
+  <!-- ===== 確認画面（オーバーレイ） ===== -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-card">
+      <h2>申込内容の確認</h2>
+      <div id="confirmBody"></div>
+      <div style="background:#E8F5E9;border-radius:8px;padding:10px;margin-top:16px;font-size:12px;color:#2E7D32;text-align:center;">
+        利用規約に同意済み
+      </div>
+      <div class="confirm-buttons">
+        <button class="btn-back" id="btnBack">修正する</button>
+        <button class="btn-confirm" id="btnConfirm">申込を確定する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 完了画面 ===== -->
+  <div id="doneScreen" style="display:none;">
+    <div class="done-card">
+      <div class="icon">✅</div>
+      <h2>協賛申込が完了しました</h2>
+      <p>お申込みありがとうございます。<br>内容を確認の上、LINEにてご連絡いたします。</p>
+      <p style="margin-top:16px;font-size:11px;color:#999;">この画面は自動的に閉じます</p>
+    </div>
+  </div>
+
+  <script>
+    // ★ ここを書き換えてください
+    const LIFF_ID = 'YOUR_LIFF_ID';
+    const GAS_URL = 'YOUR_GAS_DEPLOY_URL';
+
+    async function init() {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      const profile = await liff.getProfile();
+      document.getElementById('userId').value = profile.userId;
+    }
+
+    // ===== 同意チェック → ボタン有効化 =====
+    const agreeCheck = document.getElementById('agreeCheck');
+    const submitBtn = document.getElementById('submitBtn');
+    agreeCheck.addEventListener('change', () => {
+      submitBtn.disabled = !agreeCheck.checked;
+    });
+
+    // ===== フォーム送信 → 確認画面表示 =====
+    const form = document.getElementById('form');
+    const confirmOverlay = document.getElementById('confirmOverlay');
+    const confirmBody = document.getElementById('confirmBody');
+
+    const fieldLabels = {
+      storeName: '店舗名',
+      phone: '電話番号',
+      email: 'メールアドレス',
+      plan: '協賛プラン',
+      address: '住所',
+      note: '備考'
+    };
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      let html = '';
+      for (const [key, label] of Object.entries(fieldLabels)) {
+        const val = data.get(key) || '—';
+        html += `<div class="confirm-item"><div class="label">${label}</div><div class="value">${val}</div></div>`;
+      }
+      confirmBody.innerHTML = html;
+      confirmOverlay.classList.add('active');
+    });
+
+    // ===== 「修正する」ボタン =====
+    document.getElementById('btnBack').addEventListener('click', () => {
+      confirmOverlay.classList.remove('active');
+    });
+
+    // ===== 「申込を確定する」ボタン → 送信 =====
+    document.getElementById('btnConfirm').addEventListener('click', async () => {
+      const btn = document.getElementById('btnConfirm');
+      btn.disabled = true; btn.textContent = '送信中...';
+
+      const params = new URLSearchParams(new FormData(form));
+      params.append('action', 'apply');
+      params.append('agreedToTerms', 'true');
+      params.append('agreedAt', new Date().toISOString());
+
+      try {
+        const res = await fetch(GAS_URL + '?' + params.toString());
+        const json = await res.json();
+        if (json.success) {
+          confirmOverlay.classList.remove('active');
+          form.style.display = 'none';
+          document.querySelector('h1').style.display = 'none';
+          document.getElementById('doneScreen').style.display = 'block';
+          setTimeout(() => { if (liff.isInClient()) liff.closeWindow(); }, 3000);
+        } else {
+          alert('エラー: ' + (json.error || '送信に失敗しました'));
+          btn.disabled = false; btn.textContent = '申込を確定する';
+        }
+      } catch (err) {
+        alert('通信エラーが発生しました');
+        btn.disabled = false; btn.textContent = '申込を確定する';
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
