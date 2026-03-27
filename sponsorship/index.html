@@ -643,37 +643,7 @@
     confirmOverlay.classList.remove('show');
   });
 
-  // ── Build LINE message text from form data ──
-  function buildMessageText(fd) {
-    let lines = ['【AGPT 協賛プラン申込】', ''];
-    for (const key in fieldLabels) {
-      const val = fd.get(key) || '';
-      if (val) {
-        lines.push(fieldLabels[key] + '：' + val);
-      }
-    }
-    lines.push('');
-    lines.push('申込日時：' + new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }));
-    return lines.join('\n');
-  }
-
-  // ── Send LINE message via liff.sendMessages ──
-  async function sendLineMessage(fd) {
-    if (typeof liff === 'undefined' || !liff.isInClient || !liff.isInClient()) {
-      console.warn('Not in LIFF client. Skipping sendMessages.');
-      return;
-    }
-    try {
-      await liff.sendMessages([{
-        type: 'text',
-        text: buildMessageText(fd)
-      }]);
-    } catch (e) {
-      console.warn('sendMessages error:', e);
-    }
-  }
-
-  // ── Confirm → submit to GAS + send LINE message ──
+  // ── Confirm → submit to GAS (GAS側でLINEメッセージも送信) ──
   confirmBtn.addEventListener('click', async () => {
     confirmBtn.disabled = true;
     backBtn.style.display = 'none';
@@ -689,14 +659,14 @@
     params.append('agreedAt', new Date().toISOString());
 
     try {
-      // GAS送信
-      await fetch(GAS_URL + '?' + params.toString(), { mode: 'no-cors' });
+      const res = await fetch(GAS_URL + '?' + params.toString());
+      const data = await res.json();
+      if (data.error) {
+        console.warn('GAS error:', data.error);
+      }
     } catch (err) {
       console.warn('GAS submit error:', err);
     }
-
-    // LINEメッセージ送信
-    await sendLineMessage(fd);
 
     showDone();
   });
