@@ -8,7 +8,7 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, "Hiragino Sans", sans-serif; background: #f5f5f5; padding: 16px; }
-    h1 { font-size: 20px; color: #FF9800; text-align: center; margin: 16px 0; }
+    h1 { font-size: 20px; color: #5FB3B1; text-align: center; margin: 16px 0; }
     .form-group { margin: 10px 0; }
     label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; }
     .required::after { content: " *"; color: #E91E63; }
@@ -16,7 +16,7 @@
       width: 100%; padding: 12px; border: 2px solid #ddd;
       border-radius: 8px; font-size: 16px; -webkit-appearance: none;
     }
-    input[type="text"]:focus, input[type="date"]:focus { border-color: #FF9800; outline: none; }
+    input[type="text"]:focus, input[type="date"]:focus { border-color: #5FB3B1; outline: none; }
     input.error-field { border-color: #E91E63; }
     .error-msg { color: #E91E63; font-size: 12px; margin-top: 4px; display: none; }
 
@@ -38,7 +38,7 @@
       align-items: center; margin-bottom: 8px;
     }
     .row-number {
-      font-size: 13px; font-weight: 700; color: #FF9800;
+      font-size: 13px; font-weight: 700; color: #5FB3B1;
     }
     .btn-remove {
       background: none; border: 1px solid #ddd; border-radius: 50%;
@@ -53,15 +53,15 @@
     /* ===== 行追加ボタン ===== */
     #btnAddRow {
       width: 100%; padding: 12px; background: #fff;
-      border: 2px dashed #FF9800; border-radius: 10px;
-      color: #FF9800; font-size: 15px; font-weight: 700;
+      border: 2px dashed #5FB3B1; border-radius: 10px;
+      color: #5FB3B1; font-size: 15px; font-weight: 700;
       cursor: pointer; margin-top: 4px;
     }
-    #btnAddRow:active { background: #fff8f0; }
+    #btnAddRow:active { background: #f0faf9; }
 
     /* ===== 送信ボタン ===== */
     button[type="submit"] {
-      width: 100%; padding: 16px; background: #FF9800;
+      width: 100%; padding: 16px; background: #5FB3B1;
       color: #fff; border: none; border-radius: 8px;
       font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px;
     }
@@ -135,7 +135,7 @@
         </div>
         <div class="form-group">
           <label class="required">付与先 Waitinglist ID</label>
-          <input type="text" class="wl-id" placeholder="例: WL-12345" required>
+          <input type="text" class="wl-id" placeholder="例: F1234567" required>
         </div>
       `;
       document.getElementById('ticketRows').appendChild(div);
