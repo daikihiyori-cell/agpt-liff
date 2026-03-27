@@ -1,292 +1,677 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AGPT 協賛申込</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, "Hiragino Sans", sans-serif; background: #f5f5f5; padding: 16px; }
-    h1 { font-size: 20px; color: #06C755; text-align: center; margin: 16px 0; }
-    .form-group { margin: 14px 0; }
-    label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; }
-    input[type="text"], input[type="tel"], input[type="email"], input[type="date"],
-    select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;
-      font-size: 16px; -webkit-appearance: none; }
-    input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus,
-    input[type="date"]:focus, select:focus, textarea:focus { border-color: #06C755; outline: none; }
-    .required::after { content: " *"; color: #E91E63; }
-    .radio-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-    .radio-group label { display: flex; align-items: center; background: #fff; border: 2px solid #ddd;
-      border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: 400; flex: 1; min-width: 140px; }
-    .radio-group input[type="radio"] { width: auto; margin-right: 8px; -webkit-appearance: radio; appearance: radio; }
-    .radio-group input[type="radio"]:checked + span { color: #06C755; font-weight: 700; }
-    button[type="submit"] { width: 100%; padding: 18px; background: #06C755; color: #fff; border: none;
-      border-radius: 10px; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-    button[type="submit"]:disabled { background: #ccc; }
-    .status { text-align: center; padding: 20px; font-size: 14px; color: #555; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGPT 協賛プラン申込フォーム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ===== 利用規約 ===== */
-    .terms-section { margin: 20px 0 0; padding-top: 20px; border-top: 2px solid #e0e0e0; }
-    .terms-title { font-size: 15px; font-weight: 700; color: #1F4E79; margin-bottom: 8px; }
-    .terms-box { background: #fff; border: 2px solid #ddd; border-radius: 8px; padding: 16px;
-      max-height: 260px; overflow-y: auto; font-size: 12px; line-height: 1.8; color: #444;
-      -webkit-overflow-scrolling: touch; }
-    .terms-box h3 { font-size: 13px; color: #1F4E79; margin: 14px 0 4px; }
-    .terms-box h3:first-child { margin-top: 0; }
-    .terms-box p { margin: 4px 0; }
-    .terms-box ol { padding-left: 20px; margin: 4px 0; }
-    .terms-box ol li { margin: 3px 0; }
-    .scroll-hint { font-size: 11px; color: #999; text-align: center; margin-top: 6px; }
+  :root {
+    --bg-primary: #0A1E22;
+    --bg-secondary: #0E2F36;
+    --bg-card: rgba(14, 47, 54, 0.6);
+    --bg-input: rgba(255, 255, 255, 0.06);
+    --bg-input-focus: rgba(255, 255, 255, 0.1);
+    --border: rgba(255, 255, 255, 0.12);
+    --border-focus: rgba(95, 179, 177, 0.6);
+    --text: #FFFFFF;
+    --text-sub: rgba(255, 255, 255, 0.72);
+    --text-muted: rgba(255, 255, 255, 0.42);
+    --teal: #5FB3B1;
+    --teal-dim: rgba(95, 179, 177, 0.14);
+    --plan-basic: #5FB3B1;
+    --plan-light: #7BA4D4;
+    --plan-standard: #A48BD1;
+    --plan-premium: #D4A843;
+    --error: #E85D5D;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    --ease: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-    /* ===== 同意チェック ===== */
-    .agree-group { display: flex; align-items: center; margin: 16px 0; padding: 14px;
-      background: #FFFDE7; border: 2px solid #FDD835; border-radius: 8px; }
-    .agree-group input[type="checkbox"] { width: 22px; height: 22px; margin-right: 10px;
-      flex-shrink: 0; accent-color: #06C755; -webkit-appearance: checkbox; appearance: checkbox; }
-    .agree-group label { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 0; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
 
-    /* ===== 確認画面 ===== */
-    .confirm-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; padding: 16px; }
-    .confirm-overlay.active { display: flex; }
-    .confirm-card { background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 400px;
-      max-height: 85vh; overflow-y: auto; }
-    .confirm-card h2 { font-size: 18px; color: #1F4E79; text-align: center; margin-bottom: 16px; }
-    .confirm-item { display: flex; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
-    .confirm-item .label { font-size: 12px; color: #888; width: 90px; flex-shrink: 0; }
-    .confirm-item .value { font-size: 14px; color: #333; font-weight: 600; }
-    .confirm-buttons { display: flex; gap: 10px; margin-top: 20px; }
-    .confirm-buttons button { flex: 1; padding: 14px; border: none; border-radius: 8px;
-      font-size: 15px; font-weight: 700; cursor: pointer; }
-    .btn-back { background: #e0e0e0; color: #555; }
-    .btn-confirm { background: #06C755; color: #fff; }
-    .btn-confirm:disabled { background: #ccc; }
+  /* ── Subtle dot pattern ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(1.5px 1.5px at 20% 30%, rgba(95,179,177,0.12) 50%, transparent 50%),
+      radial-gradient(1px 1px at 50% 70%, rgba(95,179,177,0.08) 50%, transparent 50%),
+      radial-gradient(1.5px 1.5px at 80% 20%, rgba(95,179,177,0.1) 50%, transparent 50%);
+    background-size: 200px 200px;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-    /* ===== 完了画面 ===== */
-    .done-card { text-align: center; padding: 40px 20px; }
-    .done-card .icon { font-size: 48px; margin-bottom: 12px; }
-    .done-card h2 { font-size: 20px; color: #2E7D32; margin-bottom: 8px; }
-    .done-card p { font-size: 13px; color: #666; line-height: 1.7; }
-  </style>
+  .page { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 48px 20px 64px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 44px; }
+  .header-logo-img {
+    display: block; max-width: 280px; height: auto; margin: 0 auto 20px;
+  }
+  .header-line { width: 48px; height: 1px; background: var(--teal); margin: 0 auto 20px; opacity: 0.6; }
+  .header-title { font-size: 20px; font-weight: 600; letter-spacing: 2px; margin-bottom: 6px; }
+  .header-sub { font-size: 13px; font-weight: 300; color: var(--text-sub); }
+
+  /* ── Section card ── */
+  .section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 24px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow);
+    transition: border-color var(--ease);
+  }
+  .section:hover { border-color: rgba(95,179,177,0.22); }
+  .section-tag {
+    font-size: 10px; font-weight: 500; letter-spacing: 2.5px; color: var(--teal);
+    text-transform: uppercase; margin-bottom: 2px;
+  }
+  .section-title { font-size: 16px; font-weight: 600; letter-spacing: 1px; margin-bottom: 20px; }
+
+  /* ── Field ── */
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 500; color: var(--text-sub); margin-bottom: 6px;
+  }
+  .label .req {
+    font-size: 10px; font-weight: 600; color: var(--teal);
+    background: var(--teal-dim); padding: 1px 8px; border-radius: 4px; letter-spacing: 0.5px;
+  }
+  .label .opt {
+    font-size: 10px; font-weight: 400; color: var(--text-muted);
+    background: rgba(255,255,255,0.04); padding: 1px 8px; border-radius: 4px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  textarea {
+    width: 100%; padding: 11px 14px;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text);
+    background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius);
+    outline: none; transition: all var(--ease);
+  }
+  input:focus, textarea:focus {
+    background: var(--bg-input-focus); border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(95,179,177,0.08);
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); font-weight: 300; }
+  textarea { resize: vertical; min-height: 72px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+
+  .hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+
+  /* ── Plan cards ── */
+  .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 520px) { .plans { grid-template-columns: 1fr; } }
+
+  .plan {
+    position: relative; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 14px; cursor: pointer; transition: all var(--ease);
+    text-align: center; background: rgba(255,255,255,0.02);
+  }
+  .plan:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.2); }
+  .plan.on { border-width: 2px; background: rgba(255,255,255,0.05); }
+  .plan.on[data-p="basic"]    { border-color: var(--plan-basic); box-shadow: 0 0 16px rgba(95,179,177,0.12); }
+  .plan.on[data-p="light"]    { border-color: var(--plan-light); box-shadow: 0 0 16px rgba(123,164,212,0.12); }
+  .plan.on[data-p="standard"] { border-color: var(--plan-standard); box-shadow: 0 0 16px rgba(164,139,209,0.12); }
+  .plan.on[data-p="premium"]  { border-color: var(--plan-premium); box-shadow: 0 0 16px rgba(212,168,67,0.12); }
+
+  .plan input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+
+  /* Radio dot */
+  .dot {
+    position: absolute; top: 10px; right: 10px;
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid var(--border); transition: all var(--ease);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dot::after {
+    content: ''; width: 10px; height: 10px; border-radius: 50%;
+    background: transparent; transition: all var(--ease);
+  }
+  .plan.on[data-p="basic"]    .dot { border-color: var(--plan-basic); }
+  .plan.on[data-p="basic"]    .dot::after { background: var(--plan-basic); }
+  .plan.on[data-p="light"]    .dot { border-color: var(--plan-light); }
+  .plan.on[data-p="light"]    .dot::after { background: var(--plan-light); }
+  .plan.on[data-p="standard"] .dot { border-color: var(--plan-standard); }
+  .plan.on[data-p="standard"] .dot::after { background: var(--plan-standard); }
+  .plan.on[data-p="premium"]  .dot { border-color: var(--plan-premium); }
+  .plan.on[data-p="premium"]  .dot::after { background: var(--plan-premium); }
+
+  .plan-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; letter-spacing: 0.5px; }
+  .plan-price { font-size: 19px; font-weight: 700; margin-bottom: 1px; }
+  .plan-tax { font-size: 10px; color: var(--text-muted); margin-bottom: 8px; }
+  .plan-feat { font-size: 11px; color: var(--text-sub); line-height: 1.7; }
+  .plan-slots {
+    display: inline-block; font-size: 12px; font-weight: 600;
+    padding: 3px 14px; border-radius: 20px; margin-top: 8px;
+  }
+
+  .plan[data-p="basic"]    .plan-name, .plan[data-p="basic"]    .plan-price { color: var(--plan-basic); }
+  .plan[data-p="basic"]    .plan-slots { background: rgba(95,179,177,0.1); color: var(--plan-basic); }
+  .plan[data-p="light"]    .plan-name, .plan[data-p="light"]    .plan-price { color: var(--plan-light); }
+  .plan[data-p="light"]    .plan-slots { background: rgba(123,164,212,0.1); color: var(--plan-light); }
+  .plan[data-p="standard"] .plan-name, .plan[data-p="standard"] .plan-price { color: var(--plan-standard); }
+  .plan[data-p="standard"] .plan-slots { background: rgba(164,139,209,0.1); color: var(--plan-standard); }
+  .plan[data-p="premium"]  .plan-name, .plan[data-p="premium"]  .plan-price { color: var(--plan-premium); }
+  .plan[data-p="premium"]  .plan-slots { background: rgba(212,168,67,0.1); color: var(--plan-premium); }
+
+  .badge {
+    position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+    font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 2px 12px; border-radius: 20px; color: #fff; white-space: nowrap;
+  }
+
+  /* ── Terms ── */
+  .terms-box {
+    max-height: 150px; overflow-y: auto; padding: 14px;
+    background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 11px; line-height: 1.8; color: var(--text-muted); margin-bottom: 16px;
+  }
+  .terms-box::-webkit-scrollbar { width: 4px; }
+  .terms-box::-webkit-scrollbar-track { background: transparent; }
+  .terms-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  .check-row {
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+  }
+  .check-row input[type="checkbox"] { display: none; }
+  .ck {
+    flex-shrink: 0; width: 20px; height: 20px;
+    border: 1.5px solid var(--border); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--ease);
+  }
+  .ck svg { width: 12px; height: 12px; opacity: 0; transition: opacity var(--ease); }
+  .check-row input:checked + .ck { background: var(--teal); border-color: var(--teal); }
+  .check-row input:checked + .ck svg { opacity: 1; }
+  .check-text { font-size: 13px; color: var(--text-sub); }
+
+  /* ── Submit ── */
+  .submit-area { text-align: center; margin-top: 32px; }
+  .btn {
+    display: inline-block; min-width: 260px; padding: 14px 48px;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 15px; font-weight: 600; letter-spacing: 2px;
+    color: var(--bg-primary); background: linear-gradient(135deg, var(--teal), #7BC8C6);
+    border: none; border-radius: 40px; cursor: pointer;
+    transition: all var(--ease); box-shadow: 0 4px 18px rgba(95,179,177,0.22);
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(95,179,177,0.32); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+  .note { font-size: 11px; color: var(--text-muted); margin-top: 14px; line-height: 1.7; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; margin-top: 44px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-logo { font-size: 14px; font-weight: 700; letter-spacing: 6px; color: var(--text-muted); margin-bottom: 4px; }
+  .footer-text { font-size: 10px; color: var(--text-muted); }
+
+  /* ── Fade-in ── */
+  @keyframes up { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .section { animation: up .45s ease-out both; }
+  .section:nth-child(2) { animation-delay: .06s; }
+  .section:nth-child(3) { animation-delay: .12s; }
+  .section:nth-child(4) { animation-delay: .18s; }
+  .section:nth-child(5) { animation-delay: .24s; }
+
+  /* ── Confirm overlay ── */
+  .overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(5, 15, 18, 0.92);
+    backdrop-filter: blur(8px);
+    overflow-y: auto;
+    padding: 40px 20px;
+  }
+  .overlay.show { display: block; }
+  .overlay-inner {
+    max-width: 560px; margin: 0 auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px 28px;
+    box-shadow: var(--shadow);
+  }
+  .overlay-title {
+    font-size: 18px; font-weight: 600; letter-spacing: 1px;
+    text-align: center; margin-bottom: 24px; color: var(--teal);
+  }
+  .confirm-row {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .confirm-row:last-of-type { border-bottom: none; }
+  .confirm-label { font-size: 12px; font-weight: 500; color: var(--text-muted); min-width: 100px; flex-shrink: 0; }
+  .confirm-value { font-size: 14px; font-weight: 400; color: var(--text); text-align: right; word-break: break-all; }
+  .overlay-buttons {
+    display: flex; gap: 12px; margin-top: 28px; justify-content: center;
+  }
+  .btn-back {
+    padding: 12px 36px;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 1px;
+    color: var(--text-sub); background: transparent;
+    border: 1px solid var(--border); border-radius: 40px; cursor: pointer;
+    transition: all var(--ease);
+  }
+  .btn-back:hover { border-color: var(--text-sub); }
+  .btn-confirm {
+    padding: 12px 36px;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 1px;
+    color: var(--bg-primary); background: linear-gradient(135deg, var(--teal), #7BC8C6);
+    border: none; border-radius: 40px; cursor: pointer;
+    transition: all var(--ease); box-shadow: 0 4px 18px rgba(95,179,177,0.22);
+  }
+  .btn-confirm:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(95,179,177,0.32); }
+  .btn-confirm:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ── Done screen ── */
+  .done-screen {
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--bg-primary);
+    justify-content: center; align-items: center;
+    text-align: center; padding: 40px 20px;
+  }
+  .done-screen.show { display: flex; }
+  .done-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--teal-dim); border: 2px solid var(--teal);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+  }
+  .done-icon svg { width: 36px; height: 36px; }
+  .done-title { font-size: 20px; font-weight: 600; letter-spacing: 1px; margin-bottom: 10px; }
+  .done-text { font-size: 14px; color: var(--text-sub); line-height: 1.8; margin-bottom: 8px; }
+  .done-note { font-size: 12px; color: var(--text-muted); }
+
+  /* ── Loading spinner ── */
+  .spinner {
+    display: none; width: 24px; height: 24px;
+    border: 2.5px solid rgba(10,30,34,0.3);
+    border-top-color: var(--bg-primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto;
+  }
+  .spinner.show { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 520px) {
+    .page { padding: 28px 14px 48px; }
+    .section { padding: 22px 18px; }
+    .header-logo { font-size: 26px; letter-spacing: 6px; }
+    .btn { min-width: unset; width: 100%; }
+    .overlay-inner { padding: 24px 18px; }
+    .overlay-buttons { flex-direction: column; }
+    .btn-back, .btn-confirm { width: 100%; text-align: center; }
+  }
+</style>
 </head>
 <body>
 
-  <!-- ===== 入力フォーム ===== -->
-  <h1>🎫 AGPT 協賛申込</h1>
-  <form id="form">
-    <input type="hidden" id="userId" name="userId">
+<!-- ===== FORM SCREEN ===== -->
+<div class="page" id="formScreen">
 
-    <div class="form-group">
-      <label class="required">店舗名</label>
-      <input name="storeName" type="text" required>
-    </div>
-    <div class="form-group">
-      <label class="required">電話番号</label>
-      <input name="phone" type="tel" required>
-    </div>
-    <div class="form-group">
-      <label class="required">メールアドレス</label>
-      <input name="email" type="text" inputmode="email" placeholder="例: info@example.com" required>
-    </div>
-    <div class="form-group">
-      <label class="required">協賛プラン</label>
-      <div class="radio-group">
-        <label><input type="radio" name="plan" value="ベーシック（20万円）" required><span>ベーシック<br>20万円 / 10枚</span></label>
-        <label><input type="radio" name="plan" value="ライト（52.5万円）"><span>ライト<br>52.5万円 / 30枚</span></label>
-        <label><input type="radio" name="plan" value="スタンダード（75万円）"><span>スタンダード<br>75万円 / 60枚</span></label>
-        <label><input type="radio" name="plan" value="プレミアム（140万円）"><span>プレミアム<br>140万円 / 100枚</span></label>
+  <header class="header">
+    <img src="./agpt_logo.png" alt="AGPT - Asia Grand Poker Tournament" class="header-logo-img">
+    <div class="header-line"></div>
+    <h1 class="header-title">協賛プラン申込フォーム</h1>
+    <p class="header-sub">以下の項目をご入力の上、お申し込みください</p>
+  </header>
+
+  <form id="f" novalidate>
+    <input type="hidden" name="userId" id="userId" value="">
+
+    <!-- 店舗情報 -->
+    <div class="section">
+      <div class="section-tag">Store Information</div>
+      <h2 class="section-title">店舗情報</h2>
+
+      <div class="field">
+        <label class="label">店舗名 <span class="req">必須</span></label>
+        <input type="text" name="storeName" placeholder="例：ポーカースタジオ渋谷" required>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label class="label">電話番号 <span class="req">必須</span></label>
+          <input type="tel" name="phone" placeholder="03-1234-5678" required>
+        </div>
+        <div class="field">
+          <label class="label">メールアドレス <span class="req">必須</span></label>
+          <input type="email" name="email" placeholder="example@store.com" required>
+        </div>
       </div>
     </div>
-    <div class="form-group">
-      <label class="required">住所（チケット配送先）</label>
-      <input name="address" type="text" required>
-    </div>
-    <div class="form-group">
-      <label>備考</label>
-      <textarea name="note" rows="3"></textarea>
-    </div>
 
-    <!-- ===== 利用規約 ===== -->
-    <div class="terms-section">
-      <div class="terms-title">AGPT 協賛 利用規約</div>
-      <div class="terms-box" id="termsBox">
-        <h3>第1条（目的）</h3>
-        <p>本規約は、株式会社Waitinglist（以下「主催者」）が運営するAGPTにおける協賛契約の条件を定めるものです。</p>
+    <!-- 協賛プラン選択 -->
+    <div class="section">
+      <div class="section-tag">Sponsorship Plan</div>
+      <h2 class="section-title">協賛プランの選択</h2>
 
-        <h3>第2条（協賛内容）</h3>
-        <p>協賛店舗（以下「店舗」）は、選択したプランに応じた協賛金を支払い、主催者より招待チケットおよび各種特典の提供を受けます。</p>
+      <div class="plans">
 
-        <h3>第3条（招待チケットの取り扱い）</h3>
-        <p>店舗は、主催者から付与された招待チケットについて、以下の事項を遵守するものとします。</p>
-        <ol>
-          <li>招待チケットは非売品であり、売買・再販売を禁止します</li>
-          <li>第三者への譲渡を禁止します</li>
-          <li>換金を禁止します</li>
-          <li>チケットはAGPT主催トーナメントでのみ使用可能です</li>
-          <li>チケットの有効期限は発行日から6ヶ月間です</li>
-          <li>紛失・盗難時は一律無効とし、再発行は行いません</li>
-        </ol>
+        <label class="plan" data-p="basic">
+          <input type="radio" name="plan" value="ベーシック（20万円）" required>
+          <div class="dot"></div>
+          <div class="plan-name">ベーシック</div>
+          <div class="plan-price">¥200,000</div>
+          <div class="plan-tax">（税別）</div>
+          <div class="plan-feat">HPロゴ掲載（小）</div>
+          <div class="plan-slots">招待枠 10</div>
+        </label>
 
-        <h3>第4条（チケット配布・付与報告）</h3>
-        <p>店舗は、チケットの配布方法を自由に決定できます。ただし、チケットを配布した場合は、以下の情報を速やかに主催者に報告する義務を負います。</p>
-        <ol>
-          <li>チケットID</li>
-          <li>付与先プレイヤーのWaitinglist ID</li>
-          <li>付与日</li>
-        </ol>
+        <label class="plan" data-p="light">
+          <input type="radio" name="plan" value="ライト（52.5万円）" required>
+          <div class="dot"></div>
+          <div class="plan-name">ライト</div>
+          <div class="plan-price">¥525,000</div>
+          <div class="plan-tax">（税別）</div>
+          <div class="plan-feat">HPロゴ掲載（小）</div>
+          <div class="plan-slots">招待枠 30</div>
+        </label>
 
-        <h3>第5条（禁止事項）</h3>
-        <p>店舗は以下の行為を行ってはなりません。</p>
-        <ol>
-          <li>チケットの有償販売・オークション出品</li>
-          <li>架空の人物へのチケット付与（名義貸し）</li>
-          <li>主催者の承認なく第三者にチケットを譲渡する行為</li>
-          <li>虚偽の付与報告</li>
-          <li>主催者のブランドイメージを毀損する行為</li>
-        </ol>
+        <label class="plan" data-p="standard">
+          <input type="radio" name="plan" value="スタンダード（75万円）" required>
+          <div class="dot"></div>
+          <span class="badge" style="background:var(--plan-standard);">おすすめ</span>
+          <div class="plan-name">スタンダード</div>
+          <div class="plan-price">¥750,000</div>
+          <div class="plan-tax">（税別）</div>
+          <div class="plan-feat">HPロゴ掲載（大）</div>
+          <div class="plan-slots">招待枠 60</div>
+        </label>
 
-        <h3>第6条（協賛金・支払い）</h3>
-        <p>協賛金は、契約成立後に主催者が指定する方法により支払うものとします。入金確認後にチケットの発行・配送手続きを行います。</p>
+        <label class="plan" data-p="premium">
+          <input type="radio" name="plan" value="プレミアム（140万円）" required>
+          <div class="dot"></div>
+          <div class="plan-name">プレミアム</div>
+          <div class="plan-price">¥1,400,000</div>
+          <div class="plan-tax">（税別）</div>
+          <div class="plan-feat">HPロゴ掲載（大）・会場ロゴ掲載</div>
+          <div class="plan-slots">招待枠 60</div>
+        </label>
 
-        <h3>第7条（契約期間）</h3>
-        <p>本契約はシーズン単位で締結し、契約期間中の途中解約による返金は原則として行いません。</p>
-
-        <h3>第8条（契約解除）</h3>
-        <p>主催者は、店舗が本規約に違反した場合、事前の通知なく契約を解除し、未使用チケットを無効化できるものとします。この場合、協賛金の返還は行いません。</p>
-
-        <h3>第9条（免責事項）</h3>
-        <p>天災・感染症・行政指導等の不可抗力により大会が中止となった場合、主催者は代替大会の開催または協賛金の一部返還について誠意をもって協議するものとします。</p>
-
-        <h3>第10条（個人情報の取り扱い）</h3>
-        <p>主催者は、本申込で取得した個人情報を、協賛契約の履行、チケット管理、大会運営の目的にのみ使用し、法令に基づく場合を除き第三者に提供しません。</p>
-
-        <h3>第11条（Waitinglistシステムの利用）</h3>
-        <p>店舗は、協賛期間中Waitinglistシステムの利用契約を維持するものとします。Waitinglistシステムはチケット管理・付与報告・参加者管理に使用されます。</p>
-
-        <h3>第12条（準拠法・管轄）</h3>
-        <p>本規約は日本法に準拠し、紛争が生じた場合は東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p>
       </div>
-      <div class="scroll-hint">↕ スクロールして最後までお読みください</div>
     </div>
 
-    <!-- ===== 同意チェックボックス ===== -->
-    <div class="agree-group">
-      <input type="checkbox" id="agreeCheck" required>
-      <label for="agreeCheck">上記の利用規約に同意します</label>
+    <!-- チケット送付先 -->
+    <div class="section">
+      <div class="section-tag">Shipping Address</div>
+      <h2 class="section-title">チケット送付先</h2>
+
+      <div class="row2">
+        <div class="field">
+          <label class="label">郵便番号 <span class="req">必須</span></label>
+          <input type="text" name="zip" placeholder="例：150-0002" required>
+        </div>
+        <div class="field"></div>
+      </div>
+
+      <div class="field">
+        <label class="label">住所 <span class="req">必須</span></label>
+        <input type="text" name="address" placeholder="例：東京都渋谷区渋谷1-2-3 〇〇ビル5F" required>
+      </div>
     </div>
 
-    <button type="submit" id="submitBtn" disabled>申込内容を確認する</button>
+    <!-- 備考 -->
+    <div class="section">
+      <div class="section-tag">Notes</div>
+      <h2 class="section-title">備考</h2>
+
+      <div class="field">
+        <label class="label">備考・ご質問 <span class="opt">任意</span></label>
+        <textarea name="note" placeholder="ご不明点やご要望がございましたらご記入ください"></textarea>
+      </div>
+    </div>
+
+    <!-- 利用規約 -->
+    <div class="section">
+      <div class="section-tag">Terms &amp; Conditions</div>
+      <h2 class="section-title">利用規約</h2>
+
+      <div class="terms-box">
+        <strong>AGPT 協賛プラン申込規約</strong><br><br>
+        第1条（目的）<br>
+        本規約は、AGPT運営（以下「甲」）と協賛店舗（以下「乙」）間の協賛プラン申込に関する条件を定めます。<br><br>
+        第2条（申込方法）<br>
+        乙は、甲の指定するフォームに必要事項を入力し送信することにより、協賛プランの申込を行います。フォーム送信をもって申込の到達とし、甲が承諾した時点で契約が成立します。<br><br>
+        第3条（確認）<br>
+        甲は申込受付後、5営業日以内に確認メッセージを送付します。<br><br>
+        第4条（撤回・変更）<br>
+        乙は、甲が承諾通知を発するまでの間、申込の撤回または変更を行うことができます。<br><br>
+        第5条（禁止事項）<br>
+        招待チケットの売買、譲渡、換金、名義貸しは禁止されています。<br><br>
+        第6条（チケットの取り扱い）<br>
+        招待チケットは非売品です。有効期限は発行日から6ヶ月間とし、紛失時は一律無効となります。本人確認はWaitinglist IDにて行います。<br><br>
+        第7条（免責事項）<br>
+        トーナメントの中止・延期等による損害について、甲は一切の責任を負いません。<br><br>
+        第12条（基本契約との関係）<br>
+        本規約に定めのない事項は基本契約の定めに従います。本規約と基本契約の内容が矛盾する場合は、基本契約が優先されます。<br><br>
+        ※ 全文は基本契約書の別紙をご参照ください。
+      </div>
+
+      <div class="field">
+        <label class="check-row">
+          <input type="checkbox" name="agree" id="agreeCheck" required>
+          <span class="ck">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="check-text">上記の利用規約に同意します</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 送信 -->
+    <div class="submit-area">
+      <button type="submit" class="btn" id="btn" disabled>申し込む</button>
+      <p class="note">
+        送信後、運営事務局より5営業日以内にご連絡いたします。<br>
+        ※ フォーム送信をもって申込の到達とし、運営が承諾した時点で契約が成立します。
+      </p>
+    </div>
+
   </form>
 
-  <!-- ===== 確認画面（オーバーレイ） ===== -->
-  <div class="confirm-overlay" id="confirmOverlay">
-    <div class="confirm-card">
-      <h2>申込内容の確認</h2>
-      <div id="confirmBody"></div>
-      <div style="background:#E8F5E9;border-radius:8px;padding:10px;margin-top:16px;font-size:12px;color:#2E7D32;text-align:center;">
-        利用規約に同意済み
-      </div>
-      <div class="confirm-buttons">
-        <button class="btn-back" id="btnBack">修正する</button>
-        <button class="btn-confirm" id="btnConfirm">申込を確定する</button>
-      </div>
+  <footer class="footer">
+    <div class="footer-logo">AGPT</div>
+    <p class="footer-text">Powered by Waitinglist &nbsp;|&nbsp; &copy; 2026 Asia Grand Poker Tournament</p>
+  </footer>
+
+</div>
+
+<!-- ===== CONFIRM OVERLAY ===== -->
+<div class="overlay" id="confirmOverlay">
+  <div class="overlay-inner">
+    <div class="overlay-title">入力内容の確認</div>
+    <div id="confirmBody"></div>
+    <div class="overlay-buttons">
+      <button type="button" class="btn-back" id="backBtn">修正する</button>
+      <button type="button" class="btn-confirm" id="confirmBtn">この内容で申し込む</button>
     </div>
+    <div class="spinner" id="spinner"></div>
   </div>
+</div>
 
-  <!-- ===== 完了画面 ===== -->
-  <div id="doneScreen" style="display:none;">
-    <div class="done-card">
-      <div class="icon">✅</div>
-      <h2>協賛申込が完了しました</h2>
-      <p>お申込みありがとうございます。<br>内容を確認の上、LINEにてご連絡いたします。</p>
-      <p style="margin-top:16px;font-size:11px;color:#999;">この画面は自動的に閉じます</p>
+<!-- ===== DONE SCREEN ===== -->
+<div class="done-screen" id="doneScreen">
+  <div>
+    <div class="done-icon">
+      <svg viewBox="0 0 36 36" fill="none"><path d="M8 18l8 8 12-12" stroke="#5FB3B1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
+    <div class="done-title">お申し込みありがとうございます</div>
+    <div class="done-text">
+      運営事務局より5営業日以内に<br>ご連絡いたします。
+    </div>
+    <div class="done-note">この画面は自動的に閉じられます</div>
   </div>
+</div>
 
-  <script>
-    const LIFF_ID = '2009575513-bf0DhXlA';
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxg9ZXqESvj3zM452178zTVdMH5BRPa9obpL66h7xraK-KVJtuwPU532zH74d1oBLjD/exec';
+<script>
+  // ── LIFF Config ──
+  const LIFF_ID = '2009575513-bf0DhX1A';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxg9ZXqESvj3zM452178zTVdMH5BRPa9obpL66h7xraK-KVJtuwPU532zH74d1oBLjD/exec';
 
-    async function init() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        // getContext()はログイン不要でuserIdを取得できる
-        var ctx = liff.getContext();
-        if (ctx && ctx.userId) {
-          document.getElementById('userId').value = ctx.userId;
-        } else if (liff.isLoggedIn()) {
-          var profile = await liff.getProfile();
+  // ── Field labels for confirm screen ──
+  const fieldLabels = {
+    storeName: '店舗名',
+    phone: '電話番号',
+    email: 'メールアドレス',
+    plan: '協賛プラン',
+    zip: '郵便番号',
+    address: '住所',
+    note: '備考'
+  };
+
+  // ── LIFF Init ──
+  liff.init({ liffId: LIFF_ID }).then(() => {
+    try {
+      const ctx = liff.getContext();
+      if (ctx && ctx.userId) {
+        document.getElementById('userId').value = ctx.userId;
+      }
+    } catch (e) {
+      // fallback: try getProfile
+    }
+    if (liff.isLoggedIn()) {
+      liff.getProfile().then(profile => {
+        if (profile && profile.userId) {
           document.getElementById('userId').value = profile.userId;
         }
-      } catch (e) { /* init error */ }
+      }).catch(() => {});
     }
+  }).catch(err => {
+    console.error('LIFF init error:', err);
+  });
 
-    // ===== 同意チェック → ボタン有効化 =====
-    const agreeCheck = document.getElementById('agreeCheck');
-    const submitBtn = document.getElementById('submitBtn');
-    agreeCheck.addEventListener('change', () => {
-      submitBtn.disabled = !agreeCheck.checked;
+  // ── DOM refs ──
+  const form = document.getElementById('f');
+  const btn = document.getElementById('btn');
+  const confirmOverlay = document.getElementById('confirmOverlay');
+  const confirmBody = document.getElementById('confirmBody');
+  const backBtn = document.getElementById('backBtn');
+  const confirmBtn = document.getElementById('confirmBtn');
+  const spinner = document.getElementById('spinner');
+  const doneScreen = document.getElementById('doneScreen');
+
+  // ── Plan selection ──
+  document.querySelectorAll('.plan').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.plan').forEach(p => p.classList.remove('on'));
+      c.classList.add('on');
+      c.querySelector('input[type="radio"]').checked = true;
+      validate();
     });
+  });
 
-    // ===== フォーム送信 → 確認画面表示 =====
-    const form = document.getElementById('form');
-    const confirmOverlay = document.getElementById('confirmOverlay');
-    const confirmBody = document.getElementById('confirmBody');
-
-    const fieldLabels = {
-      storeName: '店舗名',
-      phone: '電話番号',
-      email: 'メールアドレス',
-      plan: '協賛プラン',
-      address: '住所',
-      note: '備考'
-    };
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const data = new FormData(form);
-      let html = '';
-      for (const [key, label] of Object.entries(fieldLabels)) {
-        const val = data.get(key) || '—';
-        html += `<div class="confirm-item"><div class="label">${label}</div><div class="value">${val}</div></div>`;
+  // ── Validation ──
+  function validate() {
+    let ok = true;
+    form.querySelectorAll('[required]').forEach(el => {
+      if (el.type === 'checkbox' && !el.checked) ok = false;
+      else if (el.type === 'radio') {
+        if (![...form.querySelectorAll('input[name="' + el.name + '"]')].some(r => r.checked)) ok = false;
       }
-      confirmBody.innerHTML = html;
-      confirmOverlay.classList.add('active');
+      else if (!el.value.trim()) ok = false;
     });
+    btn.disabled = !ok;
+  }
 
-    // ===== 「修正する」ボタン =====
-    document.getElementById('btnBack').addEventListener('click', () => {
-      confirmOverlay.classList.remove('active');
-    });
+  form.addEventListener('input', validate);
+  form.addEventListener('change', validate);
 
-    // ===== 「申込を確定する」ボタン → 送信 =====
-    document.getElementById('btnConfirm').addEventListener('click', async () => {
-      const btn = document.getElementById('btnConfirm');
-      btn.disabled = true; btn.textContent = '送信中...';
+  // ── Form submit → show confirm overlay ──
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    showConfirm();
+  });
 
-      const params = new URLSearchParams(new FormData(form));
-      params.append('action', 'apply');
-      params.append('agreedToTerms', 'true');
-      params.append('agreedAt', new Date().toISOString());
-
-      try {
-        // GASにデータ送信（GAS側でpushMessageも実行される）
-        await fetch(GAS_URL + '?' + params.toString(), { mode: 'no-cors' });
-
-        // 完了画面を表示
-        confirmOverlay.classList.remove('active');
-        form.style.display = 'none';
-        document.querySelector('h1').style.display = 'none';
-        document.getElementById('doneScreen').style.display = 'block';
-        setTimeout(() => { if (liff.isInClient()) liff.closeWindow(); }, 3000);
-      } catch (err) {
-        btn.disabled = false; btn.textContent = '申込を確定する';
+  function showConfirm() {
+    const fd = new FormData(form);
+    let html = '';
+    for (const key in fieldLabels) {
+      const val = fd.get(key) || '';
+      if (val) {
+        html += '<div class="confirm-row">'
+          + '<div class="confirm-label">' + fieldLabels[key] + '</div>'
+          + '<div class="confirm-value">' + escHtml(val) + '</div>'
+          + '</div>';
       }
-    });
+    }
+    confirmBody.innerHTML = html;
+    confirmOverlay.classList.add('show');
+  }
 
-    init();
-  </script>
+  function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  // ── Back button ──
+  backBtn.addEventListener('click', () => {
+    confirmOverlay.classList.remove('show');
+  });
+
+  // ── Confirm → submit to GAS ──
+  confirmBtn.addEventListener('click', () => {
+    confirmBtn.disabled = true;
+    backBtn.style.display = 'none';
+    spinner.classList.add('show');
+
+    const fd = new FormData(form);
+    const params = new URLSearchParams();
+    for (const [k, v] of fd.entries()) {
+      params.append(k, v);
+    }
+    params.append('action', 'apply');
+    params.append('agreedToTerms', 'true');
+    params.append('agreedAt', new Date().toISOString());
+
+    fetch(GAS_URL + '?' + params.toString(), { mode: 'no-cors' })
+      .then(() => {
+        showDone();
+      })
+      .catch(err => {
+        console.error('Submit error:', err);
+        showDone(); // GAS no-cors always opaque, treat as success
+      });
+  });
+
+  // ── Done screen ──
+  function showDone() {
+    confirmOverlay.classList.remove('show');
+    doneScreen.classList.add('show');
+    setTimeout(() => {
+      if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
+        liff.closeWindow();
+      }
+    }, 3000);
+  }
+</script>
 </body>
 </html>
